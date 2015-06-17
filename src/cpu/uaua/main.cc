@@ -1,11 +1,18 @@
+#include <cstdio>
+#include <cmath>
+
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <random>
+#include <tuple>
+#include <vector>
+
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <cstdio>
-#include <vector>
-#include <algorithm>
-#include <tuple>
 
 #include "base/base.h"
+#include "base/strings.h"
 #include "core/algorithm/plan.h"
 #include "core/algorithm/rensa_detector.h"
 #include "core/algorithm/rensa_detector_strategy.h"
@@ -13,11 +20,6 @@
 #include "core/client/ai/ai.h"
 #include "core/core_field.h"
 #include "core/frame_request.h"
-#include <iostream>
-#include <random>
-#include <fstream>
-
-#include "base/strings.h"
 
 using namespace std;
 
@@ -266,15 +268,16 @@ private:
       sa += abs(f.height(i)-f.height(i+1));
     }
     Con con = calcCon(f);
-    ll sc = rr.score*kScore +
-      rr.chains*kChain +
-      (es.size()-cover+1)*kCover +
-      f.height(3)*k3Height +
-      f.countColorPuyos()*kCount +
-      sa*kDansa +
-      con.tate3*kTate3 +
-      con.yoko3*kYoko3 +
-      con.lji*kLji;
+    ll sc =
+      log(rr.score+1)*kScore +
+      log(rr.chains+1)*kChain +
+      log(es.size()-cover+1)*kCover +
+      log(f.height(3)+1)*k3Height +
+      log(f.countColorPuyos()+1)*kCount +
+      log(sa+1)*kDansa +
+      log(con.tate3+1)*kTate3 +
+      log(con.yoko3+1)*kYoko3 +
+      log(con.lji+1)*kLji;
     return sc;
   }
 };
