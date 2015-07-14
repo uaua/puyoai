@@ -131,7 +131,7 @@ private:
                                                     const ColumnPuyoList& fire_puyos) {
                                                   RensaResult r = f.simulate();
                                                   const PuyoSet ps(fire_puyos);
-                                                  if(TsumoPossibility::possibility(ps,fire_puyos.size()) >= K) {
+                                                  if(PuyoPossibility::possibility(ps,fire_puyos.size()) >= K) {
                                                     if( me.totalOjama(enemy)*70 < r.score ) {
                                                       w.emplace_back(plan.decisions().front(), r, f);
                                                     }
@@ -191,7 +191,7 @@ private:
                                               const ColumnPuyoList& fire_puyos) {
                                             RensaResult r = f.simulate();
                                             const PuyoSet ps(fire_puyos);
-                                            if(TsumoPossibility::possibility(ps,fire_puyos.size()) >= K) {
+                                            if(PuyoPossibility::possibility(ps,fire_puyos.size()) >= K) {
                                               if( r.score >= 70*ojama_range(mt) ) {
                                                 es.push_back(r);
                                               }
@@ -256,7 +256,7 @@ private:
                                             const ColumnPuyoList& fire_puyos) {
                                           RensaResult r = f.simulate();
                                           const PuyoSet ps(fire_puyos);
-                                          if(TsumoPossibility::possibility(ps,fire_puyos.size()) >= K) {
+                                          if(PuyoPossibility::possibility(ps,fire_puyos.size()) >= K) {
                                             cover += upper_bound(es.begin()+cover,es.end(),r,
                                                                  [](const RensaResult& left,const RensaResult& right){
                                                                    return left.score > right.score;
