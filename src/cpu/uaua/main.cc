@@ -1,9 +1,11 @@
+#include <inttypes.h>
 #include <cstdio>
 #include <cmath>
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <queue>
 #include <random>
 #include <tuple>
 #include <vector>
@@ -25,260 +27,206 @@ using namespace std;
 
 typedef long long ll;
 
-class SampleRensaAI : public AI {
+class UauaAI : public AI {
 private:
-  ll kScore;
-  ll kChain;
-  ll kCover;
-  ll k3Height;
-  ll kCount;
-  ll kDansa;
-  ll kTate3;
-  ll kLji;
-  ll kYoko3;
-  int argc;
-  string a[3];
-  vector<string> v;
-  std::random_device rd;
-  const double K;
-  struct Con {
-    int tate3,yoko3,lji;
-    Con():tate3(0),yoko3(0),lji(0){}
-    Con(int t,int y,int l):tate3(t),yoko3(y),lji(l){}
-  };
 public:
-  SampleRensaAI(int argc, char* argv[]) : AI(argc, argv, "sample_rensa"), argc(argc),v(20),K(0.4) {
-    if( argc < 7 ) {
-      a[0] = argv[1];
-      std::ifstream ifs( string(a[0])+".txt" );
-      ifs >> v[0];
-      kScore = atoll(v[0].c_str());
-      ifs >> v[1];
-      kChain = atoll(v[1].c_str());
-      ifs >> v[2];
-      kCover = atoll(v[2].c_str());
-      ifs >> v[3];
-      k3Height = atoll(v[3].c_str());
-      ifs >> v[4];
-      kCount = atoll(v[4].c_str());
-      ifs >> v[5];
-      kDansa = atoll(v[5].c_str());
-      ifs >> v[6];
-      kTate3 = atoll(v[6].c_str());
-      ifs >> v[7];
-      kLji = atoll(v[7].c_str());
-      ifs >> v[8];
-      kYoko3 = atoll(v[8].c_str());
-    } else {
-    }
+  UauaAI(int argc, char* argv[])
+      : AI(argc, argv, "uaua") {
   }
-  virtual ~SampleRensaAI() {}
+  virtual ~UauaAI() {}
 
-  virtual DropDecision think(int frameId, const CoreField& f, const KumipuyoSeq& seq,
-                             const PlayerState& me, const PlayerState& enemy, bool fast) const override
-  {
-    //UNUSED_VARIABLE(frameId);
-    //UNUSED_VARIABLE(me);
-    //UNUSED_VARIABLE(enemy);
-    return eval(frameId,f, me, enemy, seq, fast ? 2 : 3);
+  virtual DropDecision think(int frameId,
+                             const CoreField& f,
+                             const KumipuyoSeq& seq,
+                             const PlayerState& me,
+                             const PlayerState& enemy,
+                             bool fast) const override {
+    UNUSED_VARIABLE(me);
+    UNUSED_VARIABLE(enemy);
+    UNUSED_VARIABLE(fast);
+    return calc(frameId, f, me, enemy, seq, 2);
   }
 
-private:
-  DropDecision eval(int frameId,const CoreField& f,const PlayerState& me,const PlayerState& enemy, const KumipuyoSeq& nexts, int depth) const
-  {
-    LOG(INFO) << f.toDebugString() << nexts.toString();
+  const int64_t minScore = -1145141919;
 
-    Decision best = Decision(3, 0);
-    ll score = numeric_limits<long>::min();
-    std::string msg = "";
-    bool tsumi = true;
-    if( enemy.isRensaOngoing() || me.totalOjama(enemy)>0 ) {
-      vector<RensaResult> es;
-      es.reserve(11111);
-      std::mt19937 mt;
-      std::uniform_int_distribution<int> ojama_range(2,4);
-      bool prohibits[FieldConstant::MAP_WIDTH]={};
-      RensaDetector::detectByDropStrategy(enemy.field,
-                                          prohibits,
-                                          PurposeForFindingRensa::FOR_FIRE,
-                                          10,
-                                          13,
-                                          [&](CoreField&& f,
-                                              const ColumnPuyoList& fire_puyos) {
-                                            RensaResult r = f.simulate();
-                                            if( r.score >= 70*ojama_range(mt) ) {
-                                              es.push_back(r);
-                                            }
-                                          });
-      sort(es.begin(),es.end(),[](const RensaResult& a,const RensaResult& b){
-          return a.score > b.score;
-        });
-      int ch = enemy.currentChain;
-      int sc = enemy.currentRensaResult.score + enemy.unusedScore;
-      ll maxSc=numeric_limits<long>::min();
-      typedef std::tuple<Decision,RensaResult,CoreField> pack;
-      vector<pack> v,w;
-      msg = "taiou: " +to_string(enemy.rensaFinishingFrameId()-frameId) + ":"+to_string(me.totalOjama(enemy));
-      //enemy.field.simulate();
-      Plan::iterateAvailablePlans(f, nexts, depth, [&](const RefPlan& plan) {
-          if( !plan.isRensaPlan() ) {
-            RensaDetector::detectByDropStrategy(plan.field(),
-                                                prohibits,
-                                                PurposeForFindingRensa::FOR_FIRE,
-                                                max(min(10,(enemy.rensaFinishingFrameId()-frameId)/30*2),4),
-                                                13,
-                                                [&](CoreField&& f,
-                                                    const ColumnPuyoList& fire_puyos) {
-                                                  RensaResult r = f.simulate();
-                                                  const PuyoSet ps(fire_puyos);
-                                                  if(PuyoPossibility::possibility(ps,fire_puyos.size()) >= K) {
-                                                    if( me.totalOjama(enemy)*70 < r.score ) {
-                                                      w.emplace_back(plan.decisions().front(), r, f);
-                                                    }
-                                                  }
-                                                });
-          } else {
-            if( plan.framesToIgnite() < enemy.rensaFinishingFrameId()-frameId-3 ) {
-              if( me.totalOjama(enemy)*70 <= plan.rensaResult().score ) {
-                //msg += to_string(plan.framesToIgnite())+" ";
-                //best = plan.decisions().front();
-                v.emplace_back(plan.decisions().front(), plan.rensaResult(), plan.field());
-              } else {
-                if( maxSc < plan.rensaResult().score && plan.numChigiri() <= 1 ) {
-                  maxSc = plan.rensaResult().score;
-                  best = plan.decisions().front();
-                }
-              }
-            }
-          }
-        });
-      if( v.size() == 0 ) {
-        if( w.size() > 0 ) {
-          msg += ": kibou";
-          sort(w.begin(),w.end(),[](const pack& a,const pack& b){
-              return get<1>(a).score > get<1>(b).score;
-            });
-          best = get<0>(w.front());
-          tsumi = false;
-        }else {
-          msg += ": damepo\n";
-          if( numeric_limits<long>::min() != maxSc ) { 
-            tsumi = false;
-          }
+  int calcHakkaY(const CoreField& f) {
+    // f.countConnectedPuyosMax4()
+    for (int y = FieldConstant::HEIGHT; y >= 1; y--) {
+      for (int x = 1; x <= FieldConstant::WIDTH; x++) {
+        if (!f.isEmpty(x, y) && f.countConnectedPuyosMax4(x, y) >= 4) {
+          return y;
         }
-      } else {
-        msg += ": daijoubu";
-        sort(v.begin(),v.end(),[&](const pack& a,const pack& b){
-            //return get<1>(a).score > get<1>(b).score;
-            return calc(es,get<2>(a),get<1>(a)) > calc(es,get<2>(b),get<1>(b));
-          });
-        tsumi = false;
-        best = get<0>(v.back());
       }
     }
-    if(tsumi) {
-      vector<RensaResult> es;
-      es.reserve(11111);
-      std::mt19937 mt;
-      std::uniform_int_distribution<int> ojama_range(2,4);
-      bool prohibits[FieldConstant::MAP_WIDTH]={};
-      RensaDetector::detectByDropStrategy(enemy.field,
-                                          prohibits,
-                                          PurposeForFindingRensa::FOR_FIRE,
-                                          10,
-                                          13,
-                                          [&](CoreField&& f,
-                                              const ColumnPuyoList& fire_puyos) {
-                                            RensaResult r = f.simulate();
-                                            const PuyoSet ps(fire_puyos);
-                                            if(PuyoPossibility::possibility(ps,fire_puyos.size()) >= K) {
-                                              if( r.score >= 70*ojama_range(mt) ) {
-                                                es.push_back(r);
-                                              }
-                                            }
-                                          });
-      sort(es.begin(),es.end(),[](const RensaResult& a,const RensaResult& b){
-          return a.score > b.score;
-        });
-      Plan::iterateAvailablePlans(f, nexts, depth, [&](const RefPlan& plan) {
-          //if( !plan.isRensaPlan() ) return;
-          int cover = 0;
-          ll sc = calc(es,plan);
-          if( score < sc ) {
-            if( plan.field().height(3) <= 11 ) {
-              score = sc;
-              best = plan.decisions().front();
-            }
-          }
-        });
+    return 0;
+  }
+
+  struct Pack {
+    int64_t score;
+    int chains;
+    Pack() : score(0), chains(0) {}
+    Pack(int64_t score, int chains)
+        : score(score),
+          chains(chains) {
     }
-    Con con = calcCon(me.field);
-    msg += "tate:" + to_string(con.tate3) + "/yoko:" + to_string(con.yoko3) + "/lji:" + to_string(con.lji) + "\n";
-    msg += to_string(score) + "\n";
-    msg += "now_rensa : " + to_string(enemy.isRensaOngoing()) + "\n";
-    msg += "ojama : " + to_string(me.totalOjama(enemy)) + "\n";
-    return DropDecision(best,msg+":::"+strings::join(v," : "));
+  };
+
+  Pack nobasiEval(const CoreField& pf) {
+    RensaResult res;
+    int hakkaY;
+    int64_t score = minScore;
+    const auto callback = [&](CoreField&& f, const ColumnPuyoList&) {
+      int tHakkaY = calcHakkaY(f);
+      RensaResult tRes = f.simulate();
+      // fprintf(stderr, "%d %d\n", tRes.chains, tHakkaY);
+      if (score < tRes.chains*100 + tHakkaY) {
+        score = tRes.chains*100 + tHakkaY;
+        res = tRes;
+        hakkaY = tHakkaY;
+      }
+    };
+    bool prohibits[FieldConstant::WIDTH]{};
+    RensaDetector::detectByDropStrategy(pf, prohibits, PurposeForFindingRensa::FOR_FIRE, 2, 13, callback);
+    // RensaDetector::detectSingle(pf, RensaDetectorStrategy::defaultDropStrategy(), callback);
+    
+    int sa = 0;
+    for (int x = 1; x <= FieldConstant::WIDTH-1; x++) {
+      sa += abs(pf.height(x)-pf.height(x+1));
+    }
+    auto con = calcCon(pf);
+    return Pack(res.chains*100 + hakkaY*3 - sa, res.chains);
   }
-  ll calc(const vector<RensaResult>& es,const RefPlan& plan) const {
-    return calc(es,plan.field(),plan.rensaResult());
-  }
-  Con calcCon(const CoreField& f) const {
-    int lji,tate3,yoko3; lji=tate3=yoko3=0;
-    for( int x = 1; x < FieldConstant::WIDTH; x++ ) {
-      for( int y = 1; y <= FieldConstant::HEIGHT; y++ ) {
-        if( f.isNormalColor(x,y) ){
+
+  struct State {
+    CoreField f;
+    int turn;
+    Decision d;
+    Pack p;
+    bool dame;
+    State() : dame(false) {}
+    State(const CoreField& f, int turn, const Pack& pack)
+        : State(f, turn, pack, false) {
+    }
+    State(const CoreField& f, int turn, const Pack& pack, bool dame)
+        : f(f), turn(turn), p(pack), dame(dame) {
+    }
+    bool operator<(const State& e) const {
+      return p.score < e.p.score;
+    }
+  };
+
+  tuple<int, int, int> calcCon(const CoreField& f) const {
+    int lji, tate3, yoko3;
+    lji = tate3 = yoko3 = 0;
+    for (int x = 1; x < FieldConstant::WIDTH; x++) {
+      for (int y = 1; y <= FieldConstant::HEIGHT; y++) {
+        if (f.isNormalColor(x,y)){
           PuyoColor u,l,d,r,m;
           m = f.color(x,y);
           u = f.color(x,y-1);
           d = f.color(x,y+1);
           r = f.color(x+1,y);
           l = f.color(x-1,y);
-          if( m == u && m == d ) tate3 += 1;
-          if( m == l && m == r ) yoko3 += 1;
-          if( (m == u && m == l) ||
+          if (m == u && m == d) tate3 += 1;
+          if (m == l && m == r) yoko3 += 1;
+          if ((m == u && m == l) ||
               (m == l && m == d) ||
               (m == d && m == r) ||
-              (m == r && m == u) ) lji += 1;
+              (m == r && m == u)) lji += 1;
         }
       }
     }
-    return Con(tate3,yoko3,lji);
+    return make_tuple(tate3, yoko3, lji);
   }
-  ll calc(const vector<RensaResult>& es,const CoreField& f, const RensaResult& rr) const {
-    bool prohibits[FieldConstant::MAP_WIDTH]={};
-    int cover = 0;
-    RensaDetector::detectByDropStrategy(f,
-                                        prohibits,
-                                        PurposeForFindingRensa::FOR_FIRE,
-                                        4,
-                                        13,
-                                        [&](CoreField&& f,
-                                            const ColumnPuyoList& fire_puyos) {
-                                          RensaResult r = f.simulate();
-                                          const PuyoSet ps(fire_puyos);
-                                          if(PuyoPossibility::possibility(ps,fire_puyos.size()) >= K) {
-                                            cover += upper_bound(es.begin()+cover,es.end(),r,
-                                                                 [](const RensaResult& left,const RensaResult& right){
-                                                                   return left.score > right.score;
-                                                                 })-(es.begin()+cover);
-                                          }
-                                        });
-    int sa = 0;
-    for( int i = 1; i < 6; i++ ) {
-      sa += abs(f.height(i)-f.height(i+1));
+  
+  DropDecision nobasi(const CoreField& f, const KumipuyoSeq& nexts,int depth) const {
+    priority_queue<State> q;
+    depth = nexts.size();
+    const int BEAM_WIDTH = 2000;
+    int lim[11]{};
+    int64_t best = minScore+1;
+    Decision d(3, 0);
+    State p;
+    q.push(State(f, 0, Pack(minScore, 0)));
+
+    //*
+    const auto& nobasiCallback = [&](const RefPlan& plan) {
+      if (plan.field().height(3) >= 12) return;
+      const Pack pack = nobasiEval(plan.field());
+      CoreField ff(f);
+      ff.simulate();
+      State s(ff, p.turn+1, pack);
+      if (p.turn == 0) {
+        s.d = plan.decisions().front();
+      } else {
+        s.d = p.d;
+      }
+      q.push(s);
+    };
+    // */
+
+    /*
+    const auto& nobasiCallback = [&](const CoreField& f,
+                                     const std::vector<Decision>& d,
+                                     int numChigiri,
+                                     int framesToIgnite,
+                                     int lastDropFrames,
+                                     bool shouldFire) {
+      UNUSED_VARIABLE(numChigiri);
+      UNUSED_VARIABLE(framesToIgnite);
+      UNUSED_VARIABLE(lastDropFrames);
+      UNUSED_VARIABLE(shouldFire);
+      const int64_t score = nobasiEval(f);
+      CoreField ff(f);
+      ff.simulate();
+      State s(ff, p.turn+1, score);
+      if (p.turn == 0) {
+        s.d = d.front();
+      } else {
+        s.d = p.d;
+      }
+      q.push(s);
+    };
+    */
+    
+    while (!q.empty()) {
+      // fprintf(stderr, "size: %zd\n", q.size());
+      p = q.top();
+      q.pop();
+      if (p.turn >= depth) {
+        // fprintf(stderr, "score: %" PRId64 "\n", p.score);
+        if (best < p.p.score) {
+          best = p.p.score;
+          d = p.d;
+        }
+        continue;
+      }
+      if (p.p.chains >= 9 || p.dame) {
+        State s(p.f, p.turn+1, p.p, true);
+        s.d = p.d;
+        q.push(s);
+        continue;
+      }
+      if (lim[p.turn]++ >= BEAM_WIDTH) {
+        continue;
+      }
+      Plan::iterateAvailablePlans(p.f, nexts.subsequence(p.turn, 1), 1, nobasiCallback);
+      // Plan::iterateAvailablePlansWithoutFiring(f, nexts.subsequence(p.turn, 1), 2, nobasiCallback);
     }
-    Con con = calcCon(f);
-    ll sc =
-      log(rr.score+1)*kScore +
-      log(rr.chains+1)*kChain +
-      log(es.size()-cover+1)*kCover +
-      log(f.height(3)+1)*k3Height +
-      log(f.countColorPuyos()+1)*kCount +
-      log(sa+1)*kDansa +
-      log(con.tate3+1)*kTate3 +
-      log(con.yoko3+1)*kYoko3 +
-      log(con.lji+1)*kLji;
-    return sc;
+    return DropDecision(d, "score: " + to_string(best));
+  }
+  
+  DropDecision calc(int frameId,
+                    const CoreField& f,
+                    const PlayerState& me,
+                    const PlayerState& enemy,
+                    const KumipuyoSeq& nexts,
+                    int depth) const {
+    UNUSED_VARIABLE(frameId);
+    UNUSED_VARIABLE(me);
+    UNUSED_VARIABLE(enemy);
+    UNUSED_VARIABLE(depth);
+    return nobasi(f, nexts, depth);
   }
 };
 
@@ -288,7 +236,22 @@ int main(int argc, char* argv[])
   google::InitGoogleLogging(argv[0]);
   google::InstallFailureSignalHandler();
 
-  SampleRensaAI(argc, argv).runLoop();
+  /*
+  UauaAI ua(argc, argv);
+  
+  CoreField f("   R  "
+              "   BY "
+              "   BY "
+              "R  RB "
+              "Y  GYB"
+              "YRYBRG"
+              "YRRYYY"
+              "BBBRRR");
+
+  fprintf(stderr, "%" PRId64 "\n", ua.nobasiEval(f));
+  */
+  
+  UauaAI(argc, argv).runLoop();
 
   return 0;
 }
