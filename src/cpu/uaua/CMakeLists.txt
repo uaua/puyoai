@@ -8,3 +8,4 @@ function(uaua_add_executable exe)
 endfunction()
 
 uaua_add_executable(uaua main.cc)
+uaua_add_executable(nobasi nobasi.cc)
