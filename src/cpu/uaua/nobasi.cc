@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
   
   CoreField f("");
   map<int, vector<CoreField>> rensaCount;
-  const KumipuyoSeq seq = generateRandomSequence();
+  const KumipuyoSeq seq = KumipuyoSeqGenerator::generateRandomSequence(50);
 
   // fprintf(stderr, "%" PRId64 "\n", ua.nobasiEval(f));
 
