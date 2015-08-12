@@ -23,7 +23,7 @@
 #include "core/client/ai/ai.h"
 #include "core/core_field.h"
 #include "core/frame_request.h"
-#include "core/sequence_generator.h"
+#include "core/kumipuyo_seq_generator.h"
 
 using namespace std;
 
@@ -134,8 +134,8 @@ public:
   typedef function<Pack (const CoreField&, const State& s)> Eval;
 
   KumipuyoSeq genKumipuyoSequence(int k) const {
-    auto&& seq = generateRandomSequenceWithSeed(114514);
-    return seq.subsequence(3, k);
+    auto&& seq = KumipuyoSeqGenerator::generateRandomSequenceWithSeed(k, 114514);
+    return seq;
   }
 
   struct SearchResult {
