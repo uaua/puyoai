@@ -1,5 +1,7 @@
 #include "pattern.h"
 
+#include <gflags/gflags.h>
+
 #include <cctype>
 #include <deque>
 #include <istream>
