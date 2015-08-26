@@ -52,8 +52,6 @@ add_subdirectory(test_lockit)
 add_subdirectory(tzik)
 add_subdirectory(yamaguchi)
 add_subdirectory(yuricat)
-add_subdirectory(ryumas)
-add_subdirectory(takapt)
 add_subdirectory(uaua)
 
 add_subdirectory(sample)
