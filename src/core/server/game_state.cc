@@ -1,5 +1,6 @@
 #include "core/server/game_state.h"
 
+#include <cstdio>
 #include <sstream>
 
 #include <json/json.h>
@@ -11,6 +12,31 @@
 // TODO(mayah): Do we need CoreField here? PlainField looks OK.
 
 using namespace std;
+
+GameState::GameState(int frameId, std::string json) : frameId_(frameId)
+{
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(json, root);
+
+  // printf("%s\n", root.get("p1", "").asString().c_str());
+  playerGameState_[0].field = PlainField(root.get("p1", "").asString());
+  playerGameState_[0].score = root.get("s1", 0).asInt();
+  playerGameState_[0].pendingOjama = root.get("o1", 0).asInt();
+  playerGameState_[0].fixedOjama = 0;
+  playerGameState_[0].kumipuyoSeq = KumipuyoSeq(root.get("n1", "").asString());
+  playerGameState_[0].message = root.get("m1", "").asString();
+  playerGameState_[0].dead = false;
+
+  playerGameState_[1].field = PlainField(root.get("p2", "").asString());
+  playerGameState_[1].score = root.get("s2", 0).asInt();
+  playerGameState_[1].pendingOjama = root.get("o2", 0).asInt();
+  playerGameState_[1].fixedOjama = 0;
+  playerGameState_[1].kumipuyoSeq = KumipuyoSeq(root.get("n2", "").asString());
+  playerGameState_[1].message = root.get("m2", "").asString();
+  playerGameState_[1].dead = false;
+}
+
 
 GameResult GameState::gameResult() const
 {
@@ -52,7 +78,7 @@ string GameState::toJson() const
     root["n2"] = playerGameState_[1].kumipuyoSeq.toString();
     root["m2"] = playerGameState_[1].message;
 
-    Json::StyledWriter writer;
+    Json::FastWriter writer;
     return writer.write(root);
 }
 

@@ -145,6 +145,9 @@ int main(int argc, char* argv[])
     } else if (FLAGS_record == "field") {
         puyofuRecorder.reset(new PuyofuRecorder);
         puyofuRecorder->setMode(PuyofuRecorder::Mode::FIELD_LOG);
+    } else if (FLAGS_record == "state") {
+        puyofuRecorder.reset(new PuyofuRecorder);
+        puyofuRecorder->setMode(PuyofuRecorder::Mode::STATE_LOG);
     } else if (FLAGS_record != "") {
         CHECK(false) << "Unknown --record value: " << FLAGS_record;
     }
@@ -206,42 +209,42 @@ int main(int argc, char* argv[])
         commentator->addCommentatorObserver(audioCommentator.get());
     }
 #endif
-
+    
     DuelServer duelServer(&manager);
 
     // --- Add necessary obesrvers here.
 #if USE_HTTPD
     if (gameStateHandler.get())
-        duelServer.addObserver(gameStateHandler.get());
+      duelServer.addObserver(gameStateHandler.get());
 #endif
     if (cui.get())
-        duelServer.addObserver(cui.get());
+      duelServer.addObserver(cui.get());
     if (puyofuRecorder.get())
-        duelServer.addObserver(puyofuRecorder.get());
+      duelServer.addObserver(puyofuRecorder.get());
 #if USE_SDL2
     if (fieldDrawer.get())
-        duelServer.addObserver(fieldDrawer.get());
+      duelServer.addObserver(fieldDrawer.get());
     if (commentator.get())
-        duelServer.addObserver(commentator.get());
+      duelServer.addObserver(commentator.get());
     if (userEventDrawer.get())
-        duelServer.addObserver(userEventDrawer.get());
+      duelServer.addObserver(userEventDrawer.get());
 #endif
 #if USE_HTTPD
     if (httpServer.get())
-        CHECK(httpServer->start());
+      CHECK(httpServer->start());
 #endif
 #if USE_AUDIO_COMMENTATOR
     if (audioCommentator.get())
-        duelServer.addObserver(audioCommentator.get());
+      duelServer.addObserver(audioCommentator.get());
     if (audioServer.get())
-        audioServer->start();
+      audioServer->start();
 #endif
 
 #if USE_SDL2
     auto duelSeverWillStopCallback = []() {
-        SDL_Event event;
-        event.type = SDL_QUIT;
-        SDL_PushEvent(&event);
+      SDL_Event event;
+      event.type = SDL_QUIT;
+      SDL_PushEvent(&event);
     };
     duelServer.setCallbackDuelServerWillExit(duelSeverWillStopCallback);
 #endif
@@ -249,25 +252,25 @@ int main(int argc, char* argv[])
 
 #if USE_SDL2
     if (commentator.get())
-        CHECK(commentator->start());
+      CHECK(commentator->start());
 
     if (mainWindow.get()) {
-        mainWindow->runMainLoop();
-        duelServer.stop();
+      mainWindow->runMainLoop();
+      duelServer.stop();
     }
 
     if (commentator.get())
-        commentator->stop();
+      commentator->stop();
 #endif
 
     duelServer.join();
 #if USE_HTTPD
     if (httpServer.get())
-        httpServer->stop();
+      httpServer->stop();
 #endif
 #if USE_AUDIO_COMMENTATOR
     if (audioServer.get())
-        audioServer->stop();
+      audioServer->stop();
 #endif
 
     return 0;

@@ -58,6 +58,8 @@ void FieldDrawer::draw(Screen* screen)
     if (!gameState_)
         return;
 
+    // std::string s = gameState_->playerGameState(0).field.toString();
+    // printf("%zd %s\n", s.size(), s.c_str());
     SDL_Rect bgRect = screen->mainBox().toSDLRect();
     SDL_BlitSurface(backgroundSurface_.get(), nullptr, screen->surface(), &bgRect);
 

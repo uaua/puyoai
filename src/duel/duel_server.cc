@@ -211,6 +211,7 @@ GameResult DuelServer::runGame(ConnectorManager* manager)
     while (!shouldStop_) {
         duelState.frameId += 1;
         int frameId = duelState.frameId;
+        // printf("%d\n", frameId);
 
         GameState gameState = duelState.toGameState();
 
