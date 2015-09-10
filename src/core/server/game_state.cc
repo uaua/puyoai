@@ -13,28 +13,33 @@
 
 using namespace std;
 
-GameState::GameState(int frameId, std::string json) : frameId_(frameId)
+GameState::GameState(std::string json)
 {
   Json::Value root;
   Json::Reader reader;
   reader.parse(json, root);
 
-  // printf("%s\n", root.get("p1", "").asString().c_str());
+  frameId_ = root.get("f", -1).asInt();
+
   playerGameState_[0].field = PlainField(root.get("p1", "").asString());
   playerGameState_[0].score = root.get("s1", 0).asInt();
   playerGameState_[0].pendingOjama = root.get("o1", 0).asInt();
   playerGameState_[0].fixedOjama = 0;
   playerGameState_[0].kumipuyoSeq = KumipuyoSeq(root.get("n1", "").asString());
+  playerGameState_[0].kumipuyoPos = KumipuyoPos(root.get("pos1", "").asString());
   playerGameState_[0].message = root.get("m1", "").asString();
   playerGameState_[0].dead = false;
+  playerGameState_[0].playable = root.get("playable1", false).asBool();
 
   playerGameState_[1].field = PlainField(root.get("p2", "").asString());
   playerGameState_[1].score = root.get("s2", 0).asInt();
   playerGameState_[1].pendingOjama = root.get("o2", 0).asInt();
   playerGameState_[1].fixedOjama = 0;
   playerGameState_[1].kumipuyoSeq = KumipuyoSeq(root.get("n2", "").asString());
+  playerGameState_[1].kumipuyoPos = KumipuyoPos(root.get("pos2", "").asString());
   playerGameState_[1].message = root.get("m2", "").asString();
   playerGameState_[1].dead = false;
+  playerGameState_[1].playable = root.get("playable2", false).asBool();
 }
 
 
@@ -66,17 +71,23 @@ string GameState::toJson() const
     }
 
     Json::Value root;
+    root["f"] = frameId_;
+    
     root["p1"] = f[0].toString();
     root["s1"] = playerGameState_[0].score;
     root["o1"] = playerGameState_[0].ojama();
     root["n1"] = playerGameState_[0].kumipuyoSeq.toString();
     root["m1"] = playerGameState_[0].message;
+    root["pos1"] = playerGameState_[0].kumipuyoPos.toString();
+    root["playable1"] = playerGameState_[0].playable;
 
     root["p2"] = f[1].toString();
     root["s2"] = playerGameState_[1].score;
     root["o2"] = playerGameState_[1].ojama();
     root["n2"] = playerGameState_[1].kumipuyoSeq.toString();
     root["m2"] = playerGameState_[1].message;
+    root["pos2"] = playerGameState_[1].kumipuyoPos.toString();
+    root["playable2"] = playerGameState_[1].playable;
 
     Json::FastWriter writer;
     return writer.write(root);

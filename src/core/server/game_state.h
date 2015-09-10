@@ -33,7 +33,7 @@ struct PlayerGameState {
 class GameState {
 public:
   explicit GameState(int frameId) : frameId_(frameId) {}
-  GameState(int frameId, std::string json);
+  explicit GameState(std::string json);
 
   FrameRequest toFrameRequestFor(int playerId) const;
   FrameRequest toFrameRequestFor(int playerId, GameResult forceSetGameResult) const;
