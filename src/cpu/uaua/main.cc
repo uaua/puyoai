@@ -40,8 +40,8 @@ public:
   struct State {
     int n;
     CoreField f;
-    Decision d;
     Score score;
+    Decision d;
     State() : State(0, CoreField()) {
     }
     State(int n, const CoreField& f) :
@@ -61,7 +61,7 @@ public:
     }
   };
 
-  int getChains(const CoreField& f) {
+  int getChains(const CoreField& f) const {
     bool prohibits[FieldConstant::WIDTH]{};
     int maxChains = 0;
     const auto callback = [&maxChains](CoreField&& f, const ColumnPuyoList&) {
@@ -74,11 +74,11 @@ public:
     return maxChains;
   }
 
-  Score nokosi(const CoreField& f) {
+  Score nokosi(const CoreField& f) const {
     return 0;
   }
 
-  Score nobasi(const CoreField& f) {
+  Score nobasi(const CoreField& f) const {
     const int SEQUENCE_LENGTH = 5;
     vector<int> chains(SEQUENCE_LENGTH);
     for (int ii = 0; ii < 5; ii++) {
