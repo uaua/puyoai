@@ -62,7 +62,7 @@ public:
   };
 
   int getChains(const CoreField& f) const {
-    bool prohibits[FieldConstant::WIDTH]{};
+    bool prohibits[FieldConstant::MAP_WIDTH]{};
     int maxChains = 0;
     const auto callback = [&maxChains](CoreField&& f, const ColumnPuyoList&) {
       int chains = f.simulateFast();
