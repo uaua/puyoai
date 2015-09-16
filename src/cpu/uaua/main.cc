@@ -86,7 +86,7 @@ public:
       priority_queue<State> q;
       int maxChains = 0;
       int beamWidth[SEQUENCE_LENGTH+1]{};
-      const int MAX_BEAM_WIDTH = 1;
+      const int MAX_BEAM_WIDTH = 10;
 
       q.emplace(0, f, getChains(f));
 
@@ -132,12 +132,16 @@ public:
     const KumipuyoSeq seq = seq_.subsequence(0, min(5, seq_.size()));
     Score score = numeric_limits<Score>::min();
     int beamWidth[111]{};
-    static const int MAX_BEAM_WIDTH = 1;
+    static const int MAX_BEAM_WIDTH = 10;
+
+    cerr << "ita" << endl;
     
     q.emplace(0, f);
     
     while (!q.empty()) {
       State p = q.top(); q.pop();
+
+      cerr << q.size() << endl;
 
       if (beamWidth[p.n] >= MAX_BEAM_WIDTH) {
         continue;
@@ -161,9 +165,15 @@ public:
               return;
             }
             const CoreField f(plan.field());
-            q.emplace(p.n+1, f, nobasi(f), p.d);
+            if (p.n == 0) {
+              q.emplace(p.n+1, f, nobasi(f), plan.decisions().front());
+            } else {
+              q.emplace(p.n+1, f, nobasi(f), p.d);
+            }
           });
     }
+
+    cerr << "done: " << score << endl;
     return DropDecision(d, "score: " + to_string(score));
   }
 };
