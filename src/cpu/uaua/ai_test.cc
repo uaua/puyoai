@@ -9,19 +9,11 @@ using namespace std;
 class AITest : public testing::Test {
  protected:
   int nobasiEval(const CoreField& f) {
-    char *argv[] = {
-      "./cpu/uaua/uaua",
-      "Player1"
-    };
-    UauaAI uaua(2, argv);
+    UauaAI uaua(0, nullptr);
     return uaua.nobasi(f);
   }
   DropDecision think(const CoreField& f) {
-    char *argv[] = {
-      "./cpu/uaua/uaua",
-      "Player1"
-    };
-    UauaAI uaua(2, argv);
+    UauaAI uaua(0, nullptr);
     const KumipuyoSeq& seq = KumipuyoSeqGenerator::generateRandomSequenceWithSeed(2, 1919);
     return uaua.think(0, f, seq, {}, {}, false);
   }
