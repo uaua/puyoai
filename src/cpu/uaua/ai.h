@@ -20,7 +20,6 @@
 #include "core/algorithm/plan.h"
 #include "core/algorithm/rensa_detector.h"
 #include "core/algorithm/rensa_detector_strategy.h"
-#include "core/algorithm/puyo_possibility.h"
 #include "core/client/ai/ai.h"
 #include "core/core_field.h"
 #include "core/frame_request.h"
