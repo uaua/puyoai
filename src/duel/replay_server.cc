@@ -142,28 +142,17 @@ void ReplayServer::runReplayLoop()
   }
 }
 
-GameResult ReplayServer::runGame(ConnectorManager* manager)
+GameResult ReplayServer::runGame(ConnectorManager* /*manager*/)
 {
   for (auto observer : observers_)
     observer->newGameWillStart();
 
-  KumipuyoSeq kumipuyoSeq = KumipuyoSeqGenerator::generateACPuyo2Sequence();
-
-  LOG(INFO) << "Puyo sequence=" << kumipuyoSeq.toString();
-
-  DuelState duelState(kumipuyoSeq);
-
   GameResult gameResult = GameResult::GAME_HAS_STOPPED;
-  /*
-  */
+  int frameId = 0;
   while (!shouldStop_) {
-    duelState.frameId += 1;
-    int frameId = duelState.frameId;
-
-    GameState gameState = gameStates_[frameId-1];
+    GameState gameState = gameStates_[frameId];
     for (GameStateObserver* observer : observers_)
       observer->onUpdate(gameState);
-    //*/
 
     // --- Check the result
 
@@ -172,8 +161,8 @@ GameResult ReplayServer::runGame(ConnectorManager* manager)
       break;
     }
 
-    // printf("%d\n", frameId);
-    // sleep(1);
+    usleep(16000);
+    frameId += 1;
     if (frameId >= int(gameStates_.size())) {
       break;
     }
@@ -181,15 +170,6 @@ GameResult ReplayServer::runGame(ConnectorManager* manager)
 
   if (shouldStop_)
     gameResult = GameResult::GAME_HAS_STOPPED;
-
-  // Send Request for GameResult.
-  {
-    ++duelState.frameId;
-    GameState gameState = duelState.toGameState();
-    for (int pi = 0; pi < 2; ++pi) {
-      manager->connector(pi)->send(gameState.toFrameRequestFor(pi));
-    }
-  }
 
   for (auto observer : observers_)
     observer->gameHasDone(gameResult);

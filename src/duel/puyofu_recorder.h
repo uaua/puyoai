@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include <memory>
-#include <mutex>
 #include <utility>
 #include <vector>
 
@@ -18,8 +17,7 @@ class PuyofuRecorder : public GameStateObserver {
 public:
     enum class Mode {
         TRANSITION_LOG,
-        FIELD_LOG,
-        STATE_LOG
+        FIELD_LOG
     };
 
     virtual ~PuyofuRecorder() {}
@@ -36,7 +34,6 @@ private:
     void emitLog(FILE* fp, int pi) const;
     void emitTransitionLog(FILE* fp, int pi) const;
     void emitFieldLog(FILE* fp, int pi) const;
-    void emitStateLog(FILE* fp) const;
 
     bool clear() const { return moves_.empty(); }
 
@@ -54,8 +51,6 @@ private:
 
     Mode mode_ = Mode::TRANSITION_LOG;
     std::vector<std::unique_ptr<Move>> moves_;
-
-    std::vector<GameState> gameStates_;
 };
 
 #endif

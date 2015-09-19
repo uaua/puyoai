@@ -16,6 +16,7 @@
 #include "core/server/connector/connector_manager_posix.h"
 #include "core/server/game_state.h"
 #include "core/server/game_state_observer.h"
+#include "core/server/game_state_recorder.h"
 #include "duel/cui.h"
 #include "duel/duel_server.h"
 #include "duel/puyofu_recorder.h"
@@ -41,6 +42,7 @@ using namespace std;
 
 DEFINE_string(record, "", "use Puyofu Recorder. 'transition' for transition log, 'field' for field log");
 DEFINE_bool(ignore_sigpipe, false, "true to ignore SIGPIPE");
+DEFINE_bool(use_game_state_recorder, true, "use game state recorder");
 #ifdef USE_HTTPD
 DEFINE_bool(httpd, false, "use httpd");
 DEFINE_int32(port, 8000, "httpd port");
@@ -145,9 +147,6 @@ int main(int argc, char* argv[])
   } else if (FLAGS_record == "field") {
     puyofuRecorder.reset(new PuyofuRecorder);
     puyofuRecorder->setMode(PuyofuRecorder::Mode::FIELD_LOG);
-  } else if (FLAGS_record == "state") {
-    puyofuRecorder.reset(new PuyofuRecorder);
-    puyofuRecorder->setMode(PuyofuRecorder::Mode::STATE_LOG);
   } else if (FLAGS_record != "") {
     CHECK(false) << "Unknown --record value: " << FLAGS_record;
   }
@@ -239,6 +238,13 @@ int main(int argc, char* argv[])
   if (audioServer.get())
     audioServer->start();
 #endif
+
+  unique_ptr<GameStateRecorder> gameStateRecorder;
+  if (FLAGS_use_game_state_recorder) {
+    gameStateRecorder.reset(new GameStateRecorder("/tmp"));
+  }
+  if (gameStateRecorder.get())
+    duelServer.addObserver(gameStateRecorder.get());
 
 #if USE_SDL2
   auto duelSeverWillStopCallback = []() {

@@ -3,8 +3,6 @@
 #include <cstdio>
 #include <sstream>
 
-#include <json/json.h>
-
 #include "core/core_field.h"
 #include "core/field_pretty_printer.h"
 #include "core/kumipuyo.h"
@@ -13,12 +11,9 @@
 
 using namespace std;
 
-GameState::GameState(std::string json)
+// GameState::GameState(const std::string& json)
+GameState::GameState(const Json::Value& root)
 {
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(json, root);
-
   frameId_ = root.get("f", -1).asInt();
 
   playerGameState_[0].field = PlainField(root.get("p1", "").asString());
@@ -80,6 +75,7 @@ string GameState::toJson() const
     root["m1"] = playerGameState_[0].message;
     root["pos1"] = playerGameState_[0].kumipuyoPos.toString();
     root["playable1"] = playerGameState_[0].playable;
+    root["d1"] = playerGameState_[0].dead;
 
     root["p2"] = f[1].toString();
     root["s2"] = playerGameState_[1].score;
@@ -88,6 +84,7 @@ string GameState::toJson() const
     root["m2"] = playerGameState_[1].message;
     root["pos2"] = playerGameState_[1].kumipuyoPos.toString();
     root["playable2"] = playerGameState_[1].playable;
+    root["d2"] = playerGameState_[1].dead;
 
     Json::FastWriter writer;
     return writer.write(root);

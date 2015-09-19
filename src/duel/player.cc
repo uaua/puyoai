@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -154,17 +155,15 @@ int main(int argc, char* argv[])
     }
 #endif
 
+    ifstream ifs(argv[3]);
+    Json::Value root;
+    Json::Reader reader;
+    reader.parse(ifs, root);
+
     std::vector<GameState> states;
-    FILE* fp = fopen(argv[3], "r");
-    char buf[2048];
-    if (fp == nullptr) {
-      LOG(ERROR) << "Cannot open file." << endl;
-      return 1;
+    for (int i = 0; i < int(root.size()); i++) {
+      states.emplace_back(root[i]);
     }
-    while (fgets(buf, sizeof(buf), fp) != nullptr) {
-      states.emplace_back(buf);
-    }
-    fclose(fp);
     ReplayServer replayServer(&manager, states);
 
     // --- Add necessary obesrvers here.

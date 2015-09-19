@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <glog/logging.h>
+#include <json/json.h>
 
 #include "base/base.h"
 #include "core/decision.h"
@@ -33,7 +34,8 @@ struct PlayerGameState {
 class GameState {
 public:
   explicit GameState(int frameId) : frameId_(frameId) {}
-  explicit GameState(std::string json);
+  // explicit GameState(const std::string& json);
+  explicit GameState(const Json::Value& json);
 
   FrameRequest toFrameRequestFor(int playerId) const;
   FrameRequest toFrameRequestFor(int playerId, GameResult forceSetGameResult) const;
