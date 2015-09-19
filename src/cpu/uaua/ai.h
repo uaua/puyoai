@@ -76,8 +76,9 @@ public:
 
   Score nobasi(const CoreField& f) const {
     const int SEQUENCE_LENGTH = 5;
-    std::vector<int> chains(SEQUENCE_LENGTH);
-    for (int ii = 0; ii < 5; ii++) {
+    const int TURN = 5;
+    std::vector<int> chains(TURN);
+    for (int ii = 0; ii < TURN; ii++) {
       const KumipuyoSeq& seq = KumipuyoSeqGenerator::generateRandomSequence(SEQUENCE_LENGTH);
       std::vector<State> curStates;
       int maxChains = 0;
@@ -115,6 +116,14 @@ public:
         curStates = std::move(nextStates);
       }
 
+      int sz = std::min<int>(BEAM_WIDTH, curStates.size());
+      // for (const State& p : curStates) {
+      for (int i = 0; i < sz; i++) {
+        const State& p = curStates[i];
+        if (maxChains < p.score) {
+          maxChains = p.score;
+        }
+      }
       /*
       for (const State& p : curStates) {
         if (maxChains < p.score) {
@@ -122,7 +131,7 @@ public:
         }
       }
       */
-      maxChains = curStates.front().score;
+      // maxChains = curStates.front().score;
       
       chains[ii] = maxChains;
     }
@@ -140,6 +149,28 @@ public:
     UNUSED_VARIABLE(me);
     UNUSED_VARIABLE(enemy);
     UNUSED_VARIABLE(fast);
+
+    if (f.countPuyos() >= 55) {
+      const KumipuyoSeq seq = seq_.subsequence(0, std::min(2, seq_.size()));
+      Score score = std::numeric_limits<Score>::min();
+      Decision d(3,0);
+      Plan::iterateAvailablePlans(
+            f,
+            seq,
+            seq.size(),
+            [&d, &score](const RefPlan& plan) {
+              if (!plan.isRensaPlan()) {
+                return;
+              }
+              RensaResult rr = plan.rensaResult();
+              if (score < rr.score) {
+                score = rr.score;
+                d = plan.decisions().front();
+              }
+            });
+      return DropDecision(d);
+    }
+    
     std::vector<State> curStates;
     Decision d(3, 0);
     const KumipuyoSeq seq = seq_.subsequence(0, std::min(5, seq_.size()));
@@ -147,7 +178,7 @@ public:
     static const int BEAM_WIDTH = 10;
     std::unordered_set<int64_t> used;
 
-    std::cerr << "ita" << std::endl;
+    std::cerr << "seq size: " << seq.size() << std::endl;
     
     curStates.emplace_back(0, f);
     used.insert(f.hash());
