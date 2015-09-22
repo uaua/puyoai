@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 #include <sstream>
 
 using namespace std;
@@ -14,7 +15,7 @@ KumipuyoPos::KumipuyoPos(const std::string& str)
   std::istringstream iss(str);
 
   while (iss >> term) {
-    const auto& v = strings::split(str, '=');
+    const auto& v = strings::split(term, '=');
     if (v.size() == 2) {
       if (v[0] == "x") {
         x = atoi(v[1].c_str());

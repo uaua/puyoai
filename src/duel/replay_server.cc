@@ -59,7 +59,9 @@ struct ReplayServer::DuelState {
 ReplayServer::ReplayServer(ConnectorManager* manager, const std::vector<GameState>& gameStates) :
     shouldStop_(false),
     manager_(manager),
-    gameStates_(gameStates)
+    gameStates_(gameStates),
+    pause_(false),
+    thinking_(false)
 {
 }
 
@@ -142,29 +144,59 @@ void ReplayServer::runReplayLoop()
   }
 }
 
+void ReplayServer::think(vector<FrameResponse> data[2]) {
+  std::lock_guard<std::mutex> lock(mu_);
+  pause_ = true;
+  thinking_ = true;
+  while (frameId_ >= 0) {
+    if (gameStates_[frameId_].playerGameState(0).event.decisionRequest) {
+      break;
+    }
+    frameId_ -= 1;
+  }
+  
+  if (!gameStates_[frameId_].playerGameState(0).event.decisionRequest) {
+    while (frameId_ < totalFrames()) {
+      if (gameStates_[frameId_].playerGameState(0).event.decisionRequest) {
+        break;
+      }
+      frameId_ += 1;
+    }
+  }
+
+  if (frameId_ > 0) {
+    frameId_ -= 1;
+    GameState gameState = gameStates_[frameId()];
+    for (int pi = 0; pi < 2; ++pi) {
+      manager_->connector(pi)->send(gameState.toFrameRequestFor(pi));
+    }
+    if (!manager_->receive(frameId(), data)) {
+      cout << "dame..." << endl;
+    }
+  }
+  thinking_ = false;
+}
+
 GameResult ReplayServer::runGame(ConnectorManager* /*manager*/)
 {
   for (auto observer : observers_)
     observer->newGameWillStart();
 
   GameResult gameResult = GameResult::GAME_HAS_STOPPED;
-  int frameId = 0;
+  frameId_ = 0;
   while (!shouldStop_) {
-    GameState gameState = gameStates_[frameId];
+    GameState gameState = gameStates_[frameId_];
     for (GameStateObserver* observer : observers_)
       observer->onUpdate(gameState);
 
-    // --- Check the result
-
     gameResult = gameState.gameResult();
-    if (gameResult != GameResult::PLAYING) {
-      break;
-    }
 
     usleep(16000);
-    frameId += 1;
-    if (frameId >= int(gameStates_.size())) {
-      break;
+    if (!pause_) {
+      frameId_ += 1;
+    }
+    if (frameId_ >= int(gameStates_.size())) {
+      frameId_ = 0;
     }
   }
 

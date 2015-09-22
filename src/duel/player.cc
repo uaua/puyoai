@@ -29,6 +29,7 @@
 #include "gui/fps_drawer.h"
 #include "gui/human_connector_key_listener.h"
 #include "gui/main_window.h"
+#include "gui/player_ui.h"
 #include "gui/user_event_drawer.h"
 #endif
 
@@ -91,6 +92,17 @@ int main(int argc, char* argv[])
       Connector::create(1, string(argv[2])),
     };
 
+    ifstream ifs(argv[3]);
+    Json::Value root;
+    Json::Reader reader;
+    reader.parse(ifs, root);
+
+    std::vector<GameState> states;
+    for (int i = 0; i < int(root.size()); i++) {
+      states.emplace_back(root[i]);
+    }
+    ReplayServer replayServer(&manager, states);
+    
     unique_ptr<Cui> cui;
     if (FLAGS_use_cui) {
         cui.reset(new Cui);
@@ -105,11 +117,12 @@ int main(int argc, char* argv[])
     unique_ptr<CommentatorDrawer> commentatorDrawer;
     unique_ptr<FPSDrawer> fpsDrawer;
     unique_ptr<UserEventDrawer> userEventDrawer;
+    unique_ptr<PlayerUi> playerUi;
     if (FLAGS_use_gui) {
         if (FLAGS_use_commentator)
-            mainWindow.reset(new MainWindow(640 + 2 * 144, 448 + 176, Box(144, 40, 144 + 640, 40 + 448)));
+            mainWindow.reset(new MainWindow(640 + 2 * 144, 448 + 176 + 40, Box(144, 40, 144 + 640, 40 + 448)));
         else
-            mainWindow.reset(new MainWindow(640, 448, Box(0, 0, 640, 448)));
+            mainWindow.reset(new MainWindow(640, 448 + 40, Box(0, 0, 640, 448)));
 
         fieldDrawer.reset(new FieldDrawer);
         mainWindow->addDrawer(fieldDrawer.get());
@@ -127,14 +140,9 @@ int main(int argc, char* argv[])
         userEventDrawer.reset(new UserEventDrawer);
         mainWindow->addDrawer(userEventDrawer.get());
 
-        for (int i = 0; i < 2; ++i) {
-            Connector* c = manager.connector(i);
-            if (c->isHuman()) {
-                HumanConnector* hc = static_cast<HumanConnector*>(c);
-                unique_ptr<MainWindow::EventListener> listener(new HumanConnectorKeyListener(hc));
-                eventListeners.push_back(move(listener));
-            }
-        }
+        playerUi.reset(new PlayerUi(&replayServer));
+        mainWindow->addDrawer(playerUi.get());
+        mainWindow->addEventListener(playerUi.get());
 
         for (auto& p : eventListeners) {
             mainWindow->addEventListener(p.get());
@@ -154,17 +162,6 @@ int main(int argc, char* argv[])
         commentator->addCommentatorObserver(audioCommentator.get());
     }
 #endif
-
-    ifstream ifs(argv[3]);
-    Json::Value root;
-    Json::Reader reader;
-    reader.parse(ifs, root);
-
-    std::vector<GameState> states;
-    for (int i = 0; i < int(root.size()); i++) {
-      states.emplace_back(root[i]);
-    }
-    ReplayServer replayServer(&manager, states);
 
     // --- Add necessary obesrvers here.
     if (cui.get())
