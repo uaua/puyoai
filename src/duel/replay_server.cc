@@ -149,31 +149,26 @@ void ReplayServer::think(vector<FrameResponse> data[2]) {
   pause_ = true;
   thinking_ = true;
   while (frameId_ >= 0) {
-    if (gameStates_[frameId_].playerGameState(0).event.decisionRequest) {
+    if (gameStates_[frameId_].playerGameState(0).event.wnextAppeared) {
       break;
     }
     frameId_ -= 1;
   }
   
-  if (!gameStates_[frameId_].playerGameState(0).event.decisionRequest) {
+  if (!gameStates_[frameId_].playerGameState(0).event.wnextAppeared) {
     while (frameId_ < totalFrames()) {
-      if (gameStates_[frameId_].playerGameState(0).event.decisionRequest) {
+      if (gameStates_[frameId_].playerGameState(0).event.wnextAppeared) {
         break;
       }
       frameId_ += 1;
     }
   }
 
-  if (frameId_ > 0) {
-    frameId_ -= 1;
-    GameState gameState = gameStates_[frameId()];
-    for (int pi = 0; pi < 2; ++pi) {
-      manager_->connector(pi)->send(gameState.toFrameRequestFor(pi));
-    }
-    if (!manager_->receive(frameId(), data)) {
-      cout << "dame..." << endl;
-    }
+  GameState gameState = gameStates_[frameId_];
+  for (int pi = 0; pi < 2; ++pi) {
+    manager_->connector(pi)->send(gameState.toFrameRequestFor(pi));
   }
+  manager_->receive(gameState.frameId(), data);
   thinking_ = false;
 }
 

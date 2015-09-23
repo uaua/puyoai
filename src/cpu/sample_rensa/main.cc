@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
@@ -26,7 +24,6 @@ public:
 private:
     DropDecision eval(const CoreField& f, const KumipuyoSeq& nexts, int depth) const
     {
-        LOG(INFO) << "kitade" << std::endl;
         LOG(INFO) << f.toDebugString() << nexts.toString();
 
         Decision best = Decision(3, 0);
