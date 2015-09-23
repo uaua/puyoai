@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
         gameStateRecorder.reset(new GameStateRecorder(FLAGS_record_dir));
     }
     if (gameStateRecorder.get())
-        server.addObserver(gameStateRecorder.get());
+        duelServer.addObserver(gameStateRecorder.get());
 
 
 #if USE_SDL2
