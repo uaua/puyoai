@@ -17,9 +17,9 @@
 
 #include "base/base.h"
 #include "base/strings.h"
-#include "core/algorithm/plan.h"
-#include "core/algorithm/rensa_detector.h"
-#include "core/algorithm/rensa_detector_strategy.h"
+#include "core/plan/plan.h"
+#include "core/rensa/rensa_detector.h"
+#include "core/rensa/rensa_detector_strategy.h"
 #include "core/client/ai/ai.h"
 #include "core/core_field.h"
 #include "core/frame_request.h"
