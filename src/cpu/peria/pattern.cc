@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include <gflags/gflags.h>
+
 DEFINE_string(pattern, "book.txt", "Figures a template file name.");
 
 namespace peria {

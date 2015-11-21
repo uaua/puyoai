@@ -3,8 +3,8 @@
 #include <memory>
 #include <gtest/gtest.h>
 
-#include "core/algorithm/puyo_possibility.h"
 #include "core/kumipuyo_seq.h"
+#include "core/probability/puyo_set_probability.h"
 
 using namespace std;
 
@@ -12,7 +12,6 @@ class GazerTest : public testing::Test {
 protected:
     virtual void SetUp() override
     {
-        PuyoPossibility::initialize();
         gazer_.reset(new Gazer());
         gazer_->initialize(100);
     }

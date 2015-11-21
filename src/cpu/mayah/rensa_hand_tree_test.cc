@@ -5,9 +5,9 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 
-#include "core/algorithm/puyo_possibility.h"
 #include "core/core_field.h"
 #include "core/kumipuyo_seq.h"
+#include "core/probability/puyo_set_probability.h"
 
 using namespace std;
 
@@ -25,14 +25,6 @@ RensaHand makePlainRensaHand(int chains)
 
     return RensaHand(IgnitionRensaResult(rensaResult, 0, NUM_FRAMES_OF_ONE_HAND), coefResult);
 }
-
-class RensaHandTreeTest : public testing::Test {
-public:
-    RensaHandTreeTest()
-    {
-        PuyoPossibility::initialize();
-    }
-};
 
 TEST(RensaHandTreeTest, eval_empty)
 {
@@ -79,8 +71,6 @@ TEST(RensaHandTreeTest, eval_saisoku)
 
 TEST(RensaHandTreeTest, eval_actual1)
 {
-    PuyoPossibility::initialize();
-
     const CoreField cf1(
         ".....R"
         "....GR"
@@ -114,8 +104,6 @@ TEST(RensaHandTreeTest, eval_actual1)
 
 TEST(RensaHandTreeTest, eval_actual2)
 {
-    PuyoPossibility::initialize();
-
     const CoreField cf1(
         "......"
         "......"

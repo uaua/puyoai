@@ -9,14 +9,14 @@
 
 #include "base/strings.h"
 #include "base/time.h"
-#include "core/algorithm/puyo_possibility.h"
-#include "core/algorithm/plan.h"
-#include "core/algorithm/rensa_detector.h"
+#include "core/plan/plan.h"
+#include "core/rensa/rensa_detector.h"
 #include "core/core_field.h"
 #include "core/field_pretty_printer.h"
 #include "core/frame_request.h"
 #include "core/kumipuyo.h"
 #include "core/kumipuyo_seq_generator.h"
+#include "core/probability/puyo_set_probability.h"
 #include "solver/problem.h"
 
 #include "evaluator.h"
@@ -70,7 +70,6 @@ int main(int argc, char* argv[])
     google::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
     google::InstallFailureSignalHandler();
-    PuyoPossibility::initialize();
 
     InteractiveAI ai(argc, argv);
     if (FLAGS_tokopuyo) {

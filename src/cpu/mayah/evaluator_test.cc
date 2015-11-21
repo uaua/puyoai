@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
-#include "core/algorithm/plan.h"
-#include "core/algorithm/puyo_possibility.h"
+#include "core/plan/plan.h"
 #include "core/core_field.h"
 #include "core/decision.h"
+#include "core/probability/puyo_set_probability.h"
 #include "gazer.h"
 
 using namespace std;
@@ -15,8 +15,6 @@ class EvaluatorTest : public testing::Test {
 protected:
     CollectedFeatureScore eval(const CoreField& f, int numIteration = 1)
     {
-        PuyoPossibility::initialize();
-
         EvaluationParameterMap evaluationParameterMap;
         PatternBook patternBook;
         Gazer gazer;
@@ -39,8 +37,6 @@ protected:
 
     template<typename F>
     CollectedFeatureScore withEvaluator(F f) {
-        PuyoPossibility::initialize();
-
         EvaluationParameterMap evaluationParameterMap;
         PatternBook patternBook;
         FeatureScoreCollector sc(evaluationParameterMap);
@@ -53,8 +49,6 @@ protected:
 
     template<typename F>
     CollectedFeatureScore withRensaEvaluator(F f) {
-        PuyoPossibility::initialize();
-
         EvaluationParameterMap evaluationParameterMap;
         PatternBook patternBook;
         FeatureScoreCollector sc(evaluationParameterMap);

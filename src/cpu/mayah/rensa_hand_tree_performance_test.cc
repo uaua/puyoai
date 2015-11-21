@@ -5,21 +5,13 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 
-#include "core/algorithm/puyo_possibility.h"
 #include "core/core_field.h"
 #include "core/kumipuyo_seq.h"
+#include "core/probability/puyo_set_probability.h"
 
 using namespace std;
 
-class RensaHandTreePerformanceTest : public testing::Test {
-public:
-    RensaHandTreePerformanceTest()
-    {
-        PuyoPossibility::initialize();
-    }
-};
-
-TEST_F(RensaHandTreePerformanceTest, pattern1_depth1)
+TEST(RensaHandTreePerformanceTest, pattern1_depth1)
 {
     CoreField cf(
         "    RB"
@@ -39,7 +31,7 @@ TEST_F(RensaHandTreePerformanceTest, pattern1_depth1)
     }
 }
 
-TEST_F(RensaHandTreePerformanceTest, pattern1_depth2)
+TEST(RensaHandTreePerformanceTest, pattern1_depth2)
 {
     CoreField cf(
         "    RB"
@@ -59,7 +51,7 @@ TEST_F(RensaHandTreePerformanceTest, pattern1_depth2)
     }
 }
 
-TEST_F(RensaHandTreePerformanceTest, pattern1_depth3)
+TEST(RensaHandTreePerformanceTest, pattern1_depth3)
 {
     CoreField cf(
         "    RB"
@@ -79,7 +71,7 @@ TEST_F(RensaHandTreePerformanceTest, pattern1_depth3)
     }
 }
 
-TEST_F(RensaHandTreePerformanceTest, pattern2_depth2)
+TEST(RensaHandTreePerformanceTest, pattern2_depth2)
 {
     const CoreField cf(
         "..BG.."

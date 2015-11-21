@@ -3,11 +3,12 @@
 #include <iostream>
 #include <sstream>
 
-#include "core/algorithm/puyo_set.h"
-#include "core/algorithm/puyo_possibility.h"
-#include "core/algorithm/rensa_detector.h"
+#include "core/rensa/rensa_detector.h"
 #include "core/core_field.h"
 #include "core/frame.h"
+#include "core/probability/column_puyo_list_probability.h"
+#include "core/probability/puyo_set_probability.h"
+#include "core/probability/puyo_set.h"
 
 using namespace std;
 
@@ -344,11 +345,12 @@ RensaResult RensaHandNodeMaker::add(CoreField&& cf,
     PuyoSet wholeUsedPuyoSet(usedPuyoSet);
     wholeUsedPuyoSet.add(puyosToComplement);
 
-    int necessaryPuyos = PuyoPossibility::necessaryPuyos(wholeUsedPuyoSet, kumipuyoSeq_, 0.5);
-    int necessaryHands = (necessaryPuyos + 1) / 2;
+    int necessaryKumipuyos = static_cast<int>(std::ceil(ColumnPuyoListProbability::instanceSlow()->necessaryKumipuyos(puyosToComplement)));
+    //int necessaryPuyos = PuyoSetProbability::necessaryPuyos(wholeUsedPuyoSet, kumipuyoSeq_, 0.5);
+    //int necessaryHands = (necessaryPuyos + 1) / 2;
 
     // Estimate the number of frames to initiate this rensa.
-    int wholeFramesToIgnite = NUM_FRAMES_OF_ONE_HAND * necessaryHands;
+    int wholeFramesToIgnite = NUM_FRAMES_OF_ONE_HAND * necessaryKumipuyos;
     int framesToIgnite = wholeFramesToIgnite - usedFramesToMovePuyo - NUM_FRAMES_OF_ONE_HAND;
     if (framesToIgnite < 0)
         framesToIgnite = 0;

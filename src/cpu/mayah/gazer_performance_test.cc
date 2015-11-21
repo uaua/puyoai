@@ -6,11 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "base/time_stamp_counter.h"
-#include "core/algorithm/plan.h"
-#include "core/algorithm/puyo_possibility.h"
+#include "core/plan/plan.h"
 #include "core/core_field.h"
 #include "core/frame_request.h"
 #include "core/kumipuyo_seq.h"
+#include "core/probability/puyo_set_probability.h"
 
 #include "mayah_ai.h"
 
@@ -61,8 +61,6 @@ int main(int argc, char* argv[])
     google::InitGoogleLogging(argv[0]);
     testing::InitGoogleTest(&argc, argv);
     google::ParseCommandLineFlags(&argc, &argv, true);
-
-    PuyoPossibility::initialize();
 
     return RUN_ALL_TESTS();
 }
